@@ -1,0 +1,11 @@
+<form method="post">{% csrf_token %}
+    {{ form.as_p }}
+    <input type="submit" value="Save">
+</form>
+
+{% if table %}
+{% load django_tables2 %}
+{% render_table table %}
+
+<a href="{% url 'dataset-addimage' view.kwargs.pk %}">add new image</a>
+{% endif %}

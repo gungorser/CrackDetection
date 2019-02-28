@@ -1,0 +1,15 @@
+<table>
+<tr>
+  <th>image</th>
+  <th>add</th>
+</tr>
+{% for image in images %}
+<tr>
+{% for col in image %}
+  <th> 
+  	{{ col | safe }}
+  </th>
+{% endfor %}
+</tr> 
+{% endfor %}
+</table>

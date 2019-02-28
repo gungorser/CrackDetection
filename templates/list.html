@@ -1,0 +1,6 @@
+l{% load django_tables2 %}
+{% render_table table %}
+
+{% if urladdr %}
+<a href="{{ urladdr }}">add new {{ modelname }}</a>
+{% endif %}
