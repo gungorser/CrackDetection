@@ -1,0 +1,11 @@
+<form method="post" enctype="multipart/form-data">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit">Upload</button>
+</form>
+
+{% if table %}
+{% load render_table from django_tables2 %}
+{% render_table table %}
+<a href="{% url 'dataset-addimage' view.kwargs.pk %}">add new image</a>
+{% endif %}

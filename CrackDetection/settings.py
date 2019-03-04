@@ -14,6 +14,7 @@ import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
@@ -21,7 +22,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # See https://docs.djangoproject.com/en/2.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '2q0a0@w5wpgqwr+hf+nng%xg23xk$m@1a&075gm-n)xdr7zk#-'
+SECRET_KEY = 'l(l8u+4vuz*)@i#su+ddqkxgwv6%1gw8(am8s63mu7x49jq-)9'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -38,8 +39,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'data',
     'django_tables2',
+    'rest_framework',
+    'main'
 ]
 
 MIDDLEWARE = [
@@ -57,7 +59,7 @@ ROOT_URLCONF = 'CrackDetection.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [ BASE_DIR + '/templates/', ],
+        'DIRS': [ BASE_DIR + '/templates/' ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
