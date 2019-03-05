@@ -13,8 +13,14 @@ class DatasetModelChoiceField(forms.ModelChoiceField):
 class AlgorithmForm(forms.Form):
     Algorithms = (
         ('threshold', u"Threshold"),
-        ('chanvese', u"Chan Vese")
+        ('thresholdhigh', u"Threshold High")
     )
-    algorithm = forms.ChoiceField(choices=Algorithms)
-    dataset = DatasetModelChoiceField(queryset=Dataset.objects.all())
+    algorithm = forms.MultipleChoiceField(
+        choices=Algorithms, 
+        widget=forms.CheckboxSelectMultiple
+    )
+    
+    dataset = DatasetModelChoiceField(
+        queryset=Dataset.objects.all()
+    )
     fields = ['algorithm', 'dataset']

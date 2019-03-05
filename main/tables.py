@@ -52,13 +52,30 @@ class DatasetImageTable(tables.Table):
         return record.image.id
     
 class OutputTable(tables.Table):
+    caption = tables.columns.Column(empty_values=())
     inputview = tables.columns.TemplateColumn('<img src="{% url \'image-view\' record.image.pk %}" width="40" height="40">')
-    
     outputview = tables.columns.TemplateColumn('<img src="{% url \'output-view\' record.pk %}" width="40" height="40">')
-    
     class Meta:
         model = Output
-        fields = ['id', 'inputview', 'outputview']
+        fields = ['caption', 'inputview', 'outputview']
+
+class OutputTable_Algorithm(OutputTable): 
+    def render_caption(self, record):
+        return record.algorithm
+        
+class OutputTable_Image(OutputTable):   
+    def render_caption(self, record):
+        return record.image.name
+        
+    
+    
+    
+    
+    
+    
+    
+    
+    
     
     
     

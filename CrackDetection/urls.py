@@ -16,8 +16,14 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from django.urls.conf import include
+from django.views.generic.base import TemplateView
 
+class IndexView(TemplateView):
+    headertext='Introduction'
+    template_name = "intro.html"
+    
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('main/', include('main.urls')),
+    path('', IndexView.as_view(), name='intro'),
 ]

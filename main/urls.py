@@ -7,7 +7,7 @@ from django.urls.conf import path
 from main.views import ImageCreate, ImageList, ImageUpdate, ImageDelete,\
     DatasetList, DatasetCreate, DatasetUpdate, DatasetDelete, DatasetImageCreate,\
     DatasetAddImage, DatasetImageDelete, ImageView, DatasetCalculateView, ThresholdView,\
-    OutputView, OutputList
+    OutputView, ThresholdHighView
 
 urlpatterns = [
     path('images/',                 ImageList.as_view(),    name='image-list'),
@@ -24,7 +24,7 @@ urlpatterns = [
     path('datasets/<slug:dsid>/image/<slug:imid>/delete', DatasetImageDelete.as_view(),  name='datasetimage-delete'),
     path('datasetcalculate/', DatasetCalculateView.as_view(),  name='datasetcalculate'),
     path('outputs/<slug:pk>', OutputView.as_view(),  name='output-view'),
-    path('outputs/<slug:alid>/<slug:dsid>/', OutputList.as_view(),  name='output-list'),
     path('threshold/<slug:pk>/', ThresholdView.as_view(),  name='threshold'),
+    path('thresholdhigh/<slug:pk>/', ThresholdHighView.as_view(),  name='thresholdhigh'),
 
 ]

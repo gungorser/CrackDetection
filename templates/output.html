@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+{% for image, table in tables.items %}
+<b>Image {{image.id}} : {{image.name}}</b>
+{% load render_table from django_tables2 %}
+{% render_table table %}
+<br></br>
+{% endfor %}
+
+{% endblock %}

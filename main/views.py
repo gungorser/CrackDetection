@@ -3,7 +3,7 @@ from django.views.generic.edit import CreateView, UpdateView, DeleteView,\
 from main.models import Image, Dataset, DatasetImage, Output
 from django.views.generic.list import ListView
 from main.tables import ImageTable, DatasetTable, DatasetImageTable,\
-    ImageRemainingTable, OutputTable
+    ImageRemainingTable, OutputTable, OutputTable_Image, OutputTable_Algorithm
 from django.urls.base import reverse_lazy, reverse
 from django.views.generic.base import View
 from django.shortcuts import redirect, render
@@ -136,33 +136,52 @@ class DatasetCalculateView(CalculationsViews, FormView):
     template_name = 'create.html'
     subheadertext='Run algorithm for the dataset:'
     
+    def save_output(self, algorithm, output):
+        output.save()
+        uri = reverse(algorithm, args=[output.id])
+        url = self.request.build_absolute_uri(uri)
+        requests.get(url)
+        
     def form_valid(self, form):
         dsimages = DatasetImage.objects.filter(dataset_id=form.data['dataset'])
-        algorithm = form.data['algorithm']
+        algorithms = form.cleaned_data['algorithm']
         
+        # Send all requests
         for dsimage in dsimages:
-            output, created = Output.objects.get_or_create(algorithm=algorithm, image=dsimage.image)
-            output.save()
-            uri = reverse(algorithm, args=[output.id])
-            url = self.request.build_absolute_uri(uri)
-            requests.get(url)
-        
-        return redirect(reverse('output-list', args=[form.data['algorithm'], form.data['dataset']]))
-        
+            if len(algorithms) is 1:
+                output, created = Output.objects.get_or_create(algorithm=algorithms[0], image=dsimage.image)
+                self.save_output(algorithms[0], output)
+            else:
+                for algorithm in algorithms:
+                    output, created = Output.objects.get_or_create(algorithm=algorithm, image=dsimage.image)
+                    self.save_output(algorithm, output)
+                
+        # create tables
+        if len(algorithms) is 1:
+            images=dsimages.values_list('image__id', flat=True)
+            outputs = Output.objects.filter(algorithm=algorithms[0], image__in=images)
+            table = OutputTable_Image(outputs)
+            return render(self.request, 'list.html', {
+                    'table': table,
+                    'view': {
+                        'headertext': 'Calculations',
+                        'subheadertext': 'Comparing Images:',
+                    }
+                })
+        else:
+            tables={}
+            for dsimage in dsimages:
+                outputs = Output.objects.filter(image=dsimage.image)
+                table = OutputTable_Algorithm(outputs)
+                tables[dsimage.image] = table
 
-class OutputList(CalculationsViews, ListView):
-    model = Output
-    template_name = 'list.html'
-    subheadertext='Results:'   
-    
-    def get_context_data(self, **kwargs):
-        context = super(OutputList, self).get_context_data(**kwargs)
-        dsimages= DatasetImage.objects.filter(dataset=self.kwargs['dsid'])
-        images=dsimages.values_list('image__id', flat=True)
-        
-        outputs = OutputTable(Output.objects.filter(image__in=images))
-        context['table'] = outputs
-        return context
+            return render(self.request, 'output.html', {
+                    'tables': tables,
+                    'view': {
+                        'headertext': 'Calculations',
+                        'subheadertext': 'Comparing Algorithms:',
+                    }
+                })
 
 class AlgorithmExecutionBase(View):
     template_name = 'view.html'
@@ -185,6 +204,11 @@ class AlgorithmExecutionBase(View):
 class ThresholdView(AlgorithmExecutionBase):
     def execute(self, image, output_path):
         ret,thresh1 = cv2.threshold(image,127,255,cv2.THRESH_BINARY)
+        cv2.imwrite(output_path, thresh1)
+
+class ThresholdHighView(AlgorithmExecutionBase):
+    def execute(self, image, output_path):
+        ret,thresh1 = cv2.threshold(image,200,255,cv2.THRESH_BINARY)
         cv2.imwrite(output_path, thresh1)
 
 class OutputView(View):
