@@ -12,7 +12,19 @@ from django.http.response import HttpResponse
 from main.forms import AlgorithmForm
 import requests
 import cv2
+from django.core.exceptions import PermissionDenied
+from django.db.models.deletion import ProtectedError
 
+class ProtectedErrorMixin(DeleteView):
+    errortext='This object is used by others. \nDelete dependent objects first!'
+    def post(self, request, *args, **kwargs):
+        try:
+            return DeleteView.post(self, request, *args, **kwargs)
+        except ProtectedError:
+            return render(self.request, 'error.html', {
+                    'errortext': self.errortext
+                })
+            
 class ImageViews:
     model = Image
     fields = ['name', 'data']
@@ -38,7 +50,7 @@ class ImageUpdate(ImageViews, UpdateView):
     success_url = reverse_lazy('image-list')
     subheadertext='Edit Image:'
     
-class ImageDelete(ImageViews, DeleteView ):
+class ImageDelete(ProtectedErrorMixin, ImageViews, DeleteView ):
     template_name = 'delete.html'
     success_url = reverse_lazy('image-list')
     subheadertext='Delete Image:'
@@ -73,11 +85,11 @@ class DatasetUpdate(DatasetViews, UpdateView):
         datasetimages = DatasetImage.objects.filter(dataset_id=self.kwargs['pk'])
         context['table'] = DatasetImageTable(datasetimages)
         return context
-    
-class DatasetDelete(DatasetViews, DeleteView):
+
+class DatasetDelete(ProtectedErrorMixin, DatasetViews, DeleteView):
     template_name = 'delete.html'
-    success_url = reverse_lazy('dataset-list')
     subheadertext='Delete Dataset:'
+    success_url = reverse_lazy('dataset-list')
 
 class DatasetAddImage(DatasetViews, ListView):
     model = Image
@@ -86,12 +98,9 @@ class DatasetAddImage(DatasetViews, ListView):
     
     def get_context_data(self, **kwargs):
         context = super(DatasetAddImage, self).get_context_data(**kwargs)
-        images = list(Image.objects.all())
         dsimages = DatasetImage.objects.filter(dataset_id=self.kwargs['pk'])
-        for dsimage in dsimages:
-            for image in images:
-                if dsimage.image.id == image.id:
-                    images.remove(image)
+        dsimage_ids = dsimages.values_list('image__id', flat=True) 
+        images = Image.objects.all().exclude(id__in=dsimage_ids)
         context['table'] = ImageRemainingTable(images)
         return context
     
