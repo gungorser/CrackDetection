@@ -13,15 +13,19 @@ from main.forms import AlgorithmForm
 import requests
 import cv2
 
-class ImageCreate(CreateView):
+class ImageViews:
     model = Image
     fields = ['name', 'data']
+    headertext='Create & Edit Images'
+    
+class ImageCreate(ImageViews, CreateView):
     template_name = 'create.html'
     success_url = reverse_lazy('image-list')
+    subheadertext='New Image:'
 
-class ImageList(ListView):
-    model = Image
+class ImageList(ImageViews, ListView):
     template_name = 'list.html'
+    subheadertext='Images:'
     
     def get_context_data(self, **kwargs):
         context = super(ImageList, self).get_context_data(**kwargs)
@@ -29,26 +33,29 @@ class ImageList(ListView):
         context['table'] = ImageTable(Image.objects.all())
         return context
 
-class ImageUpdate(UpdateView):
-    model = Image
-    fields = ['name', 'data']
+class ImageUpdate(ImageViews, UpdateView):
     template_name = 'create.html'
     success_url = reverse_lazy('image-list')
+    subheadertext='Edit Image:'
     
-class ImageDelete(DeleteView):
-    model = Image
+class ImageDelete(ImageViews, DeleteView ):
     template_name = 'delete.html'
     success_url = reverse_lazy('image-list')
+    subheadertext='Delete Image:'
 
-class DatasetCreate(CreateView):
+class DatasetViews:
     model = Dataset
     fields = ['name', 'description']
+    headertext='Create & Edit Datasets'
+    
+class DatasetCreate(DatasetViews, CreateView):
     template_name = 'create.html'
     success_url = reverse_lazy('dataset-list')
+    subheadertext='New Dataset:'
 
-class DatasetList(ListView):
-    model = Dataset
+class DatasetList(DatasetViews, ListView):
     template_name = 'list.html'
+    subheadertext='Datasets:'
     
     def get_context_data(self, **kwargs):
         context = super(DatasetList, self).get_context_data(**kwargs)
@@ -56,26 +63,26 @@ class DatasetList(ListView):
         context['table'] = DatasetTable(Dataset.objects.all())
         return context
 
-class DatasetUpdate(UpdateView):
-    model = Dataset
-    fields = ['name', 'description']
+class DatasetUpdate(DatasetViews, UpdateView):
     template_name = 'create.html'
     success_url = reverse_lazy('dataset-list')
-    
+    subheadertext='Edit Dataset:'
+
     def get_context_data(self, **kwargs):
         context = super(DatasetUpdate, self).get_context_data(**kwargs)
         datasetimages = DatasetImage.objects.filter(dataset_id=self.kwargs['pk'])
         context['table'] = DatasetImageTable(datasetimages)
         return context
     
-class DatasetDelete(DeleteView):
-    model = Dataset
+class DatasetDelete(DatasetViews, DeleteView):
     template_name = 'delete.html'
     success_url = reverse_lazy('dataset-list')
+    subheadertext='Delete Dataset:'
 
-class DatasetAddImage(ListView):
+class DatasetAddImage(DatasetViews, ListView):
     model = Image
     template_name = 'list.html'
+    subheadertext='Add Image to Dataset:'
     
     def get_context_data(self, **kwargs):
         context = super(DatasetAddImage, self).get_context_data(**kwargs)
@@ -111,10 +118,14 @@ class ImageView(View):
         image=Image.objects.get(id=image_id)
         with open(BASE_DIR + image.data.url, "rb") as f:
             return HttpResponse(f.read(), content_type="image/jpeg")
+
+class CalculationsViews:
+    headertext='Calculations'
     
-class AlgorithmView(FormView):
+class DatasetCalculateView(CalculationsViews, FormView):
     form_class = AlgorithmForm
     template_name = 'create.html'
+    subheadertext='Run algorithm for the dataset:'
     
     def form_valid(self, form):
         dsimages = DatasetImage.objects.filter(dataset_id=form.data['dataset'])
