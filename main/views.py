@@ -131,19 +131,29 @@ class DatasetCalculateView(CalculationsViews, FormView):
         dsimages = DatasetImage.objects.filter(dataset_id=form.data['dataset'])
         algorithm = form.data['algorithm']
         
-        dsimage_ids=[]
         for dsimage in dsimages:
             output, created = Output.objects.get_or_create(algorithm=algorithm, image=dsimage.image)
             output.save()
             uri = reverse(algorithm, args=[output.id])
             url = self.request.build_absolute_uri(uri)
             requests.get(url)
-            dsimage_ids.append(dsimage.id) 
         
-        outputs = OutputTable(Output.objects.filter(pk__in=dsimage_ids))
-        return render(self.request, 'list.html', {
-                'table': outputs
-            })
+        return redirect(reverse('output-list', args=[form.data['algorithm'], form.data['dataset']]))
+        
+
+class OutputList(CalculationsViews, ListView):
+    model = Output
+    template_name = 'list.html'
+    subheadertext='Results:'   
+    
+    def get_context_data(self, **kwargs):
+        context = super(OutputList, self).get_context_data(**kwargs)
+        dsimages= DatasetImage.objects.filter(dataset=self.kwargs['dsid'])
+        images=dsimages.values_list('image__id', flat=True)
+        
+        outputs = OutputTable(Output.objects.filter(image__in=images))
+        context['table'] = outputs
+        return context
 
 class AlgorithmExecutionBase(View):
     template_name = 'view.html'
