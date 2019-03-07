@@ -1,104 +1,90 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<title>CSS Template</title>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<style>
-* {
-  box-sizing: border-box;
-}
+<!DOCTYPE html> 
+<html> 
+<head> 
+	<title>Page Layout</title> 
+	<style> 
+		.head1 { 
+			font-size:40px; 
+			color:#009900; 
+			font-weight:bold; 
+		} 
+		.head2 { 
+			font-size:17px; 
+			margin-left:10px; 
+			margin-bottom:15px; 
+		} 
+		body { 
+			margin: 0 auto; 
+			background-position:center; 
+			background-size: contain; 
+		} 
+	
+		.menu { 
+			position: sticky; 
+			top: 0; 
+			background-color: #009900; 
+l			color:white; 
+			margin: 0 auto; 
+			overflow: hidden; 
+		} 
+		.menu a { 
+			float left; 
+			color: white; 
+			text-align: center; 
+			padding: 14px 16px; 
+			text-decoration: none; 
+			font-size: 20px; 
+		} 
+		.menu-log { 
+			right: auto; 
+			float: right; 
+		} 
+		footer { 
+			width: 100%; 
+			bottom: 0px; 
+			background-color: #000; 
+			color: #fff; 
+			position: relative; 
+			padding-top:20px; 
+			padding-bottom:50px; 
+			text-align:center; 
+			font-size:30px; 
+			font-weight:bold; 
+		} 
+		.body_sec { 
+			background-color: #D3D3D3; 
+		} 
+	</style> 
+</head> 
 
-body {
-  font-family: Arial, Helvetica, sans-serif;
-  width: 100%;
-  min-height: 100%;
-}
-
-/* Style the header */
-header {
-  background-color: #666;
-  padding: 30px;
-  text-align: center;
-  font-size: 20px;
-  color: white;
-  height: 15%
-}
-
-/* Create two columns/boxes that floats next to each other */
-nav {
-  float: left;
-  width: 30%;
-  min-height: 75%; 
-  background: #ccc;
-  padding: 20px;
-  
-}
-
-/* Style the list inside the menu */
-nav ul {
-  list-style-type: none;
-  padding: 0;
-}
-
-article {
-  float: left;
-  padding: 20px;
-  width: 70%;
-  background-color: #f1f1f1;
-  min-height: 75%; /* only for demonstration, should be removed */
-}
-
-/* Clear floats after the columns */
-section:after {
-  content: "";
-  display: table;
-  clear: both;
-}
-
-/* Style the footer */
-footer {
-  background-color: #777;
-  padding: 10px;
-  text-align: center;
-  color: white;
-  height=10%
-}
-
-/* Responsive layout - makes the two columns/boxes stack on top of each other instead of next to each other, on small screens */
-@media (max-width: 600px) {
-  nav, article {
-    width: 100%;
-    height: l%;
-  }
-}
-</style>
-</head>
-<body>
-
-<header>
-  <h2>{{ view.headertext }}</h2>
-</header>
-
-<section>
-  <nav>
-    <ul>
-      <li><a href="{% url 'intro' %}">Introduction</a></li>
-      <li><a href="{% url 'image-list' %}">Images</a></li>
-      <li><a href="{% url 'dataset-list' %}">Datasets</a></li>
-      <li><a href="{% url 'datasetcalculate' %}">Calculations</a></li>
-    </ul>
-  </nav>
-  
-  <article>
-    <h1>{{ view.subheadertext }}</h1>
-    {% block content %}{% endblock %}
-  </article>
-</section>
-
-<footer>
-  <p>Footer</p>
-</footer>
-
-</body>
-</html>
+<body> 
+	
+	<!-- Header Section -->
+	<header> 
+		<div class="head1">Crack Detection</div> 
+		<div class="head2">An output comparison portal made by Sercan Gungor</div> 
+	</header> 
+	
+	<!-- Menu Navigation Bar -->
+	<div class="menu"> 
+		<a href="{% url 'intro' %}">Introduction</a>
+		<a href="{% url 'image-list' %}">Images</a>
+		<a href="{% url 'dataset-list' %}">Datasets</a>
+		<a href="{% url 'datasetcalculate' %}">Calculations</a>
+		<div class="menu-log"> 
+			<a href="#login">LOGIN</a> 
+		</div> 
+	</div> 
+	
+	<!-- Body section -->
+	<div class = "body_sec"> 
+		<section id="Content"> 
+			<h3>{{ view.subheadertext }}</h3> 
+    		{% block content %}{% endblock %}
+		</section> 
+	</div> 
+	
+	<!-- Footer Section -->
+	<footer>Footer Section</footer> 
+</body> 
+</html>					 
