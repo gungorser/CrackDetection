@@ -61,6 +61,11 @@ class ImageDelete(ImageViews, ProtectedErrorMixin, DeleteView ):
     template_name = 'delete.html'
     success_url = reverse_lazy('image-list')
     subheadertext='Delete Image:'
+    
+    def delete(self, *args, **kwargs):
+        outputs = Output.objects.filter(image_id=self.kwargs['pk'])
+        outputs.delete()
+        return super(ImageDelete, self).delete(*args, **kwargs)
 
 class DatasetViews_base:
     model = Dataset
@@ -96,10 +101,15 @@ class DatasetUpdate(DatasetViews, UpdateView):
         context['table'] = DatasetImageTable(datasetimages)
         return context
 
-class DatasetDelete(ProtectedErrorMixin, DatasetViews, DeleteView):
+class DatasetDelete(DatasetViews, DeleteView):
     template_name = 'delete.html'
     subheadertext='Delete Dataset:'
     success_url = reverse_lazy('dataset-list')
+    
+    def delete(self, *args, **kwargs):
+        dsimages = DatasetImage.objects.filter(dataset_id=self.kwargs['pk'])
+        dsimages.delete()
+        return super(DatasetDelete, self).delete(*args, **kwargs)
 
 class DatasetAddImage(DatasetViews, ListView):
     model = Image
