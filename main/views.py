@@ -14,6 +14,9 @@ import requests
 import cv2
 from django.core.exceptions import PermissionDenied
 from django.db.models.deletion import ProtectedError
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.views import LoginView
 
 class ProtectedErrorMixin(DeleteView):
     errortext='This object is used by others. \nDelete dependent objects first!'
@@ -22,20 +25,24 @@ class ProtectedErrorMixin(DeleteView):
             return DeleteView.post(self, request, *args, **kwargs)
         except ProtectedError:
             return render(self.request, 'error.html', {
-                    'errortext': self.errortext
+                    'errortext': self.errortext,
+                    'success_url': self.success_url
                 })
             
-class ImageViews:
+class ImageViews_base:
     model = Image
     fields = ['name', 'data']
     headertext='Create & Edit Images'
-    
+
+class ImageViews(LoginRequiredMixin, ImageViews_base):
+    model = Image
+
 class ImageCreate(ImageViews, CreateView):
     template_name = 'create.html'
     success_url = reverse_lazy('image-list')
     subheadertext='New Image:'
 
-class ImageList(ImageViews, ListView):
+class ImageList(ImageViews_base, ListView):
     template_name = 'list.html'
     subheadertext='Images:'
     
@@ -49,23 +56,26 @@ class ImageUpdate(ImageViews, UpdateView):
     template_name = 'create.html'
     success_url = reverse_lazy('image-list')
     subheadertext='Edit Image:'
-    
-class ImageDelete(ProtectedErrorMixin, ImageViews, DeleteView ):
+
+class ImageDelete(ImageViews, ProtectedErrorMixin, DeleteView ):
     template_name = 'delete.html'
     success_url = reverse_lazy('image-list')
     subheadertext='Delete Image:'
 
-class DatasetViews:
+class DatasetViews_base:
     model = Dataset
     fields = ['name', 'description']
     headertext='Create & Edit Datasets'
     
+class DatasetViews(LoginRequiredMixin, DatasetViews_base):
+    model = Dataset
+     
 class DatasetCreate(DatasetViews, CreateView):
     template_name = 'create.html'
     success_url = reverse_lazy('dataset-list')
     subheadertext='New Dataset:'
 
-class DatasetList(DatasetViews, ListView):
+class DatasetList(DatasetViews_base, ListView):
     template_name = 'list.html'
     subheadertext='Datasets:'
     
