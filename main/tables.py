@@ -5,6 +5,14 @@ Created on Mar 4, 2019
 '''
 from django_tables2 import tables, A
 from main.models import Image, Dataset, DatasetImage, Output
+from CrackDetection.settings import IMAGE_HEIGHT
+
+def image_template(viewname, *args):
+    argval=''
+    for arg in args:
+        argval = argval + ' ' + arg
+    url = '{% url \''+viewname+'\''+argval+' %}'
+    return '<a href="'+url+'"><img src="'+url+'" height="'+str(IMAGE_HEIGHT)+'"></a>'
 
 class ImageTable(tables.Table):
     delete = tables.columns.LinkColumn('image-delete', args=[A('pk')]
@@ -13,17 +21,16 @@ class ImageTable(tables.Table):
     update = tables.columns.LinkColumn('image-update', args=[A('pk')]
             , orderable=False, empty_values=()) 
     
-    view = tables.columns.TemplateColumn('<img src="{% url \'image-view\' record.pk %}" width="40" height="40">')
+    view = tables.columns.TemplateColumn(image_template('image-view', 'record.pk'))
     
     class Meta:
         model = Image
         fields = ['id', 'name', 'view', 'update', 'delete']
 
 class ImageRemainingTable(tables.Table):
-    add = tables.columns.TemplateColumn('<a href=" {% url \'datasetimage-create\' view.kwargs.pk record.pk %}">add</a>')
+    add = tables.columns.TemplateColumn(image_template('datasetimage-create', 'view.kwargs.pk', 'record.pk'))
+    view = tables.columns.TemplateColumn(image_template('image-view', 'record.pk'))
     
-    view = tables.columns.TemplateColumn('<img src="{% url \'image-view\' record.pk %}" width="40" height="40">')
-
     class Meta:
         model = Image
         fields = ['id', 'view', 'add']
@@ -40,9 +47,8 @@ class DatasetTable(tables.Table):
         fields = ['id', 'name', 'description', 'update', 'delete']
         
 class DatasetImageTable(tables.Table):
-    remove = tables.columns.TemplateColumn('<a href=" {% url \'datasetimage-delete\' record.dataset.pk record.image.pk %}">remove</a>')
-    
-    view = tables.columns.TemplateColumn('<img src="{% url \'image-view\' record.image.pk %}" width="40" height="40">')
+    remove = tables.columns.TemplateColumn(image_template('datasetimage-delete', 'record.dataset.pk',  'record.image.pk'))
+    view = tables.columns.TemplateColumn(image_template('image-view', 'record.image.pk'))
 
     class Meta:
         model = DatasetImage
@@ -53,8 +59,9 @@ class DatasetImageTable(tables.Table):
     
 class OutputTable(tables.Table):
     caption = tables.columns.Column(empty_values=())
-    inputview = tables.columns.TemplateColumn('<img src="{% url \'image-view\' record.image.pk %}" width="40" height="40">')
-    outputview = tables.columns.TemplateColumn('<img src="{% url \'output-view\' record.pk %}" width="40" height="40">')
+    inputview = tables.columns.TemplateColumn(image_template('image-view', 'record.image.pk'))
+    outputview = tables.columns.TemplateColumn(image_template('output-view', 'record.pk'))
+    
     class Meta:
         model = Output
         fields = ['caption', 'inputview', 'outputview']

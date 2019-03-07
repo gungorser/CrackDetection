@@ -11,10 +11,10 @@ class Dataset(models.Model):
     description = models.CharField(max_length=30)
     
 class DatasetImage(models.Model):
-    image = models.ForeignKey(Image, on_delete=models.PROTECT)
-    dataset = models.ForeignKey(Dataset, on_delete=models.PROTECT)
+    image = models.ForeignKey(Image, on_delete=models.CASCADE)
+    dataset = models.ForeignKey(Dataset, on_delete=models.CASCADE)
 
 class Output(models.Model):
     algorithm = models.CharField(max_length=30)
-    image = models.ForeignKey(Image, on_delete=models.PROTECT)
+    image = models.ForeignKey(Image, on_delete=models.CASCADE)
     data = models.ImageField(null=True)

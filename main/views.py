@@ -17,17 +17,6 @@ from django.db.models.deletion import ProtectedError
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView
-
-class ProtectedErrorMixin(DeleteView):
-    errortext='This object is used by others. \nDelete dependent objects first!'
-    def post(self, request, *args, **kwargs):
-        try:
-            return DeleteView.post(self, request, *args, **kwargs)
-        except ProtectedError:
-            return render(self.request, 'error.html', {
-                    'errortext': self.errortext,
-                    'success_url': self.success_url
-                })
             
 class ImageViews_base:
     model = Image
@@ -45,7 +34,6 @@ class ImageCreate(ImageViews, CreateView):
 class ImageList(ImageViews_base, ListView):
     template_name = 'list.html'
     subheadertext='Images:'
-    
     def get_context_data(self, **kwargs):
         context = super(ImageList, self).get_context_data(**kwargs)
         context['addurl'] = 'image-create'
@@ -57,15 +45,10 @@ class ImageUpdate(ImageViews, UpdateView):
     success_url = reverse_lazy('image-list')
     subheadertext='Edit Image:'
 
-class ImageDelete(ImageViews, ProtectedErrorMixin, DeleteView ):
+class ImageDelete(ImageViews, DeleteView ):
     template_name = 'delete.html'
     success_url = reverse_lazy('image-list')
     subheadertext='Delete Image:'
-    
-    def delete(self, *args, **kwargs):
-        outputs = Output.objects.filter(image_id=self.kwargs['pk'])
-        outputs.delete()
-        return super(ImageDelete, self).delete(*args, **kwargs)
 
 class DatasetViews_base:
     model = Dataset
@@ -83,7 +66,6 @@ class DatasetCreate(DatasetViews, CreateView):
 class DatasetList(DatasetViews_base, ListView):
     template_name = 'list.html'
     subheadertext='Datasets:'
-    
     def get_context_data(self, **kwargs):
         context = super(DatasetList, self).get_context_data(**kwargs)
         context['addurl'] = 'dataset-create'
@@ -94,7 +76,6 @@ class DatasetUpdate(DatasetViews, UpdateView):
     template_name = 'create.html'
     success_url = reverse_lazy('dataset-list')
     subheadertext='Edit Dataset:'
-
     def get_context_data(self, **kwargs):
         context = super(DatasetUpdate, self).get_context_data(**kwargs)
         datasetimages = DatasetImage.objects.filter(dataset_id=self.kwargs['pk'])
@@ -105,11 +86,6 @@ class DatasetDelete(DatasetViews, DeleteView):
     template_name = 'delete.html'
     subheadertext='Delete Dataset:'
     success_url = reverse_lazy('dataset-list')
-    
-    def delete(self, *args, **kwargs):
-        dsimages = DatasetImage.objects.filter(dataset_id=self.kwargs['pk'])
-        dsimages.delete()
-        return super(DatasetDelete, self).delete(*args, **kwargs)
 
 class DatasetAddImage(DatasetViews, ListView):
     model = Image

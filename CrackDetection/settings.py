@@ -29,7 +29,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
-
+IMAGE_HEIGHT=40
 # Application definition
 
 INSTALLED_APPS = [
