@@ -6,8 +6,9 @@ Created on Mar 4, 2019
 from django.urls.conf import path
 from main.views import ImageCreate, ImageList, ImageUpdate, ImageDelete,\
     DatasetList, DatasetCreate, DatasetUpdate, DatasetDelete, DatasetImageCreate,\
-    DatasetAddImage, DatasetImageDelete, ImageView, DatasetCalculateView, ThresholdView,\
-    OutputView, ThresholdHighView
+    DatasetAddImage, DatasetImageDelete, ImageView, DatasetCalculateView, \
+    OutputView, ProductView
+from main.algorithms import ThresholdView, ThresholdHighView
 
 urlpatterns = [
     path('images/',                 ImageList.as_view(),    name='image-list'),
@@ -26,5 +27,5 @@ urlpatterns = [
     path('outputs/<slug:pk>', OutputView.as_view(),  name='output-view'),
     path('threshold/<slug:pk>/', ThresholdView.as_view(),  name='threshold'),
     path('thresholdhigh/<slug:pk>/', ThresholdHighView.as_view(),  name='thresholdhigh'),
-
+    path('products/<slug:pk>', ProductView.as_view(),  name='product-view'),
 ]

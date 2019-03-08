@@ -1,9 +1,10 @@
 from django.views.generic.edit import CreateView, UpdateView, DeleteView,\
     FormView
-from main.models import Image, Dataset, DatasetImage, Output
+from main.models import Image, Dataset, DatasetImage, Output, Product
 from django.views.generic.list import ListView
 from main.tables import ImageTable, DatasetTable, DatasetImageTable,\
-    ImageRemainingTable, OutputTable, OutputTable_Image, OutputTable_Algorithm
+    ImageRemainingTable, OutputTable_Image, OutputTable_Algorithm,\
+    image_template
 from django.urls.base import reverse_lazy, reverse
 from django.views.generic.base import View
 from django.shortcuts import redirect, render
@@ -11,12 +12,9 @@ from CrackDetection.settings import BASE_DIR
 from django.http.response import HttpResponse
 from main.forms import AlgorithmForm
 import requests
-import cv2
-from django.core.exceptions import PermissionDenied
-from django.db.models.deletion import ProtectedError
-from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth.views import LoginView
+from django_tables2.columns.base import Column
+from django_tables2.columns.templatecolumn import TemplateColumn
             
 class ImageViews_base:
     model = Image
@@ -156,7 +154,15 @@ class DatasetCalculateView(CalculationsViews, FormView):
         if len(algorithms) is 1:
             images=dsimages.values_list('image__id', flat=True)
             outputs = Output.objects.filter(algorithm=algorithms[0], image__in=images)
-            table = OutputTable_Image(outputs)
+            products = Product.objects.filter(output_id=outputs.first().id)
+            extra_columns=[]
+            for product in products:
+                tc = TemplateColumn(image_template('product-view', str(product.id)))
+                tpl = product.title, tc
+                extra_columns.append((product.title, tc))
+            extra_columns.append(('Output', TemplateColumn(image_template('output-view', 'record.pk'))))
+            
+            table = OutputTable_Image(data=outputs, extra_columns=extra_columns)
             return render(self.request, 'list.html', {
                     'table': table,
                     'view': {
@@ -166,10 +172,21 @@ class DatasetCalculateView(CalculationsViews, FormView):
                 })
         else:
             tables={}
-            for dsimage in dsimages:
-                outputs = Output.objects.filter(image=dsimage.image)
-                table = OutputTable_Algorithm(outputs)
-                tables[dsimage.image] = table
+            for algorithm in algorithms:
+                outputs = Output.objects.filter(
+                    algorithm=algorithm,
+                    image__in=dsimages.values_list('image'))
+                
+                products = Product.objects.filter(output=outputs.first())
+                for product in products:
+                    extra_columns=[]
+                    tc = TemplateColumn(image_template('product-view', str(product.id)))
+                    tpl = product.title, tc
+                    extra_columns.append((product.title, tc))
+                extra_columns.append(('Output', TemplateColumn(image_template('output-view', 'record.pk'))))
+            
+                table = OutputTable_Image(outputs, extra_columns=extra_columns)
+                tables[algorithm] = table
 
             return render(self.request, 'output.html', {
                     'tables': tables,
@@ -179,34 +196,6 @@ class DatasetCalculateView(CalculationsViews, FormView):
                     }
                 })
 
-class AlgorithmExecutionBase(View):
-    template_name = 'view.html'
-    def get(self, request, *args, **kwargs):
-        output = Output.objects.get(id=kwargs['pk'])
-        output_path = output.image.data.path + '_' + str(output.id)
-        img = cv2.imread(output.image.data.path, 0)
-        try:
-            self.execute(img, output_path)
-            with open(output_path, "rb") as fo:
-                output.data = output_path
-                output.save()
-        except:
-            return HttpResponse(status=400)
-        return HttpResponse(status=200)
-    
-    def execute(self, image, output_path):
-        pass
-    
-class ThresholdView(AlgorithmExecutionBase):
-    def execute(self, image, output_path):
-        ret,thresh1 = cv2.threshold(image,127,255,cv2.THRESH_BINARY)
-        cv2.imwrite(output_path, thresh1)
-
-class ThresholdHighView(AlgorithmExecutionBase):
-    def execute(self, image, output_path):
-        ret,thresh1 = cv2.threshold(image,200,255,cv2.THRESH_BINARY)
-        cv2.imwrite(output_path, thresh1)
-
 class OutputView(View):
     template_name = 'view.html'
     def get(self, request, *args, **kwargs):
@@ -214,7 +203,13 @@ class OutputView(View):
         with open(output.data.path, "rb") as f:
             return HttpResponse(f.read(), content_type="image/jpeg")
         
-        
+class ProductView(View):
+    template_name = 'view.html'
+    def get(self, request, *args, **kwargs):
+        product=Product.objects.get(id=kwargs['pk'])
+        with open(product.data.path, "rb") as f:
+            return HttpResponse(f.read(), content_type="image/jpeg")
+               
     
     
     

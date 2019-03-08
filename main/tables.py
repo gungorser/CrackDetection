@@ -6,6 +6,7 @@ Created on Mar 4, 2019
 from django_tables2 import tables, A
 from main.models import Image, Dataset, DatasetImage, Output
 from CrackDetection.settings import IMAGE_HEIGHT
+from django.utils.safestring import mark_safe
 
 def image_template(viewname, *args):
     argval=''
@@ -28,7 +29,7 @@ class ImageTable(tables.Table):
         fields = ['id', 'name', 'view', 'update', 'delete']
 
 class ImageRemainingTable(tables.Table):
-    add = tables.columns.TemplateColumn(image_template('datasetimage-create', 'view.kwargs.pk', 'record.pk'))
+    add = tables.columns.TemplateColumn('<a href=" {% url \'datasetimage-create\' view.kwargs.pk record.pk %}">add</a>')
     view = tables.columns.TemplateColumn(image_template('image-view', 'record.pk'))
     
     class Meta:
@@ -47,7 +48,7 @@ class DatasetTable(tables.Table):
         fields = ['id', 'name', 'description', 'update', 'delete']
         
 class DatasetImageTable(tables.Table):
-    remove = tables.columns.TemplateColumn(image_template('datasetimage-delete', 'record.dataset.pk',  'record.image.pk'))
+    remove = tables.columns.TemplateColumn('<a href=" {% url \'datasetimage-delete\' record.dataset.pk record.image.pk %}">remove</a>')
     view = tables.columns.TemplateColumn(image_template('image-view', 'record.image.pk'))
 
     class Meta:
@@ -59,13 +60,14 @@ class DatasetImageTable(tables.Table):
     
 class OutputTable(tables.Table):
     caption = tables.columns.Column(empty_values=())
-    inputview = tables.columns.TemplateColumn(image_template('image-view', 'record.image.pk'))
-    outputview = tables.columns.TemplateColumn(image_template('output-view', 'record.pk'))
+    inputview = tables.columns.TemplateColumn(
+        image_template('image-view', 'record.image.pk'),
+        verbose_name='Input')
     
     class Meta:
         model = Output
-        fields = ['caption', 'inputview', 'outputview']
-
+        fields = ['caption', 'inputview']
+    
 class OutputTable_Algorithm(OutputTable): 
     def render_caption(self, record):
         return record.algorithm

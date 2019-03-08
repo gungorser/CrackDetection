@@ -18,3 +18,8 @@ class Output(models.Model):
     algorithm = models.CharField(max_length=30)
     image = models.ForeignKey(Image, on_delete=models.CASCADE)
     data = models.ImageField(null=True)
+    
+class Product(models.Model):
+    title = models.CharField(max_length=30)
+    output = models.ForeignKey(Output, on_delete=models.CASCADE)
+    data = models.ImageField(null=True)
