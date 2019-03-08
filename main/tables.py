@@ -75,7 +75,7 @@ class ProductTable(tables.Table):
     
     class Meta:
         model = Product
-        fields = ['id', 'title', 'view',]
+        fields = ['title', 'view',]
     
     
     

@@ -3,6 +3,10 @@
 <head> 
 	<title>Page Layout</title> 
 	<style> 
+	
+		html, body{
+			height:100%;
+		}
 		.head1 { 
 			font-size:40px; 
 			color:#009900; 
@@ -14,6 +18,7 @@
 			margin-bottom:15px; 
 		} 
 		body { 
+			max-width: 1264px;
 			margin: 0 auto; 
 			background-position:center; 
 			background-size: contain; 
@@ -40,15 +45,14 @@ l			color:white;
 			float: right; 
 		} 
 		footer { 
-			width: 100%; 
 			bottom: 0px; 
 			background-color: #000; 
 			color: #fff; 
 			position: relative; 
 			padding-top:20px; 
-			padding-bottom:50px; 
+			padding-bottom:20px; 
 			text-align:center; 
-			font-size:30px; 
+			font-size:10px; 
 			font-weight:bold; 
 		} 
 		.body_sec { 
@@ -58,37 +62,36 @@ l			color:white;
 </head> 
 
 <body> 
-	
-	<!-- Header Section -->
-	<header> 
-		<div class="head1">Crack Detection</div> 
-		<div class="head2">An output comparison portal made by Sercan Gungor</div> 
-	</header> 
-	
-	<!-- Menu Navigation Bar -->
-	<div class="menu"> 
-		<a href="{% url 'intro' %}">Introduction</a>
-		<a href="{% url 'image-list' %}">Images</a>
-		<a href="{% url 'dataset-list' %}">Datasets</a>
-		<a href="{% url 'datasetcalculate' %}">Calculations</a>
-		<div class="menu-log"> 
-			{% if user.is_authenticated %}
-        		<a href="{% url 'logout' %}">logout: {{ user.username }} </a>
-        	{% else %}
-				<a href="{% url 'login' %}"> LOGIN</a>
-    		{% endif %}
+		<!-- Header Section -->
+		<header> 
+			<div class="head1">Crack Detection</div> 
+			<div class="head2">An output comparison portal made by Sercan Gungor</div> 
+		</header> 
+		
+		<!-- Menu Navigation Bar -->
+		<div class="menu"> 
+			<a href="{% url 'intro' %}">Introduction</a>
+			<a href="{% url 'image-list' %}">Images</a>
+			<a href="{% url 'dataset-list' %}">Datasets</a>
+			<a href="{% url 'datasetcalculate' %}">Calculations</a>
+			<div class="menu-log"> 
+				{% if user.is_authenticated %}
+	        		<a href="{% url 'logout' %}">logout: {{ user.username }} </a>
+	        	{% else %}
+					<a href="{% url 'login' %}"> LOGIN</a>
+	    		{% endif %}
+			</div> 
 		</div> 
-	</div> 
-	
-	<!-- Body section -->
-	<div class = "body_sec"> 
-		<section id="Content"> 
-			<h3>{{ view.subheadertext }}</h3> 
-    		{% block content %}{% endblock %}
-		</section> 
-	</div> 
-	
-	<!-- Footer Section -->
-	<footer>Footer Section</footer> 
+		
+		<!-- Body section -->
+		<div class = "body_sec"> 
+			<section id="Content"> 
+				<h3>{{ view.subheadertext }}</h3> 
+	    		{% block content %}{% endblock %}
+			</section> 
+		</div> 
+		
+		<!-- Footer Section -->
+		<footer>Footer Section</footer>
 </body> 
 </html>					 
