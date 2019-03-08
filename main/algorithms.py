@@ -3,12 +3,11 @@ Created on Mar 7, 2019
 
 @author: user
 '''
-import os
 import cv2
 from django.views.generic.base import View
 from main.models import Output, Product
 from django.http.response import HttpResponse
-from CrackDetection.settings import BASE_DIR, MEDIA_URL, MEDIA_ROOT
+from CrackDetection.settings import MEDIA_ROOT
 
 class AlgorithmExecutionBase(View):
     template_name = 'view.html'
@@ -21,10 +20,9 @@ class AlgorithmExecutionBase(View):
         output.save()
 
     def log_product(self, img, title):
-        output = Output.objects.get(id=self.kwargs['pk'])
-        product, created = Product.objects.get_or_create(
+        product = Product.objects.get_or_create(
             output_id=self.kwargs['pk'], 
-            title=title)
+            title=title)[0]
         filename = 'product_' + self.kwargs['pk'] + '_' + str(product.id) + '.jpeg'
         cv2.imwrite(MEDIA_ROOT + '/' + filename, img)
         product.data.name = filename
@@ -42,7 +40,7 @@ class AlgorithmExecutionBase(View):
     
 class ThresholdView(AlgorithmExecutionBase):
     def execute(self, image, output_path):
-        ret,thresh1 = cv2.threshold(image,127,255,cv2.THRESH_BINARY)
+        thresh1 = cv2.threshold(image,127,255,cv2.THRESH_BINARY)[1]
         self.log_product(thresh1, 'pr1')
         self.log_product(thresh1, 'pr2')
         self.log_product(thresh1, 'pr3')
@@ -50,7 +48,7 @@ class ThresholdView(AlgorithmExecutionBase):
 
 class ThresholdHighView(AlgorithmExecutionBase):
     def execute(self, image, output_path):
-        ret,thresh1 = cv2.threshold(image,200,255,cv2.THRESH_BINARY)
+        thresh1 = cv2.threshold(image,200,255,cv2.THRESH_BINARY)[1]
         self.log_output(thresh1)
         
         

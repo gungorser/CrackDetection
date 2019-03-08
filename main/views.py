@@ -3,18 +3,16 @@ from django.views.generic.edit import CreateView, UpdateView, DeleteView,\
 from main.models import Image, Dataset, DatasetImage, Output, Product
 from django.views.generic.list import ListView
 from main.tables import ImageTable, DatasetTable, DatasetImageTable,\
-    ImageRemainingTable, OutputTable_Image, OutputTable_Algorithm,\
-    image_template
+    ImageRemainingTable, OutputTable,\
+    PhotoColumn, ProductTable
 from django.urls.base import reverse_lazy, reverse
-from django.views.generic.base import View
+from django.views.generic.base import View, TemplateView
 from django.shortcuts import redirect, render
 from CrackDetection.settings import BASE_DIR
 from django.http.response import HttpResponse
 from main.forms import AlgorithmForm
 import requests
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django_tables2.columns.base import Column
-from django_tables2.columns.templatecolumn import TemplateColumn
             
 class ImageViews_base:
     model = Image
@@ -114,14 +112,6 @@ class DatasetImageDelete(View):
         datasetimage.delete()
         return redirect(reverse('dataset-update', args=[dsid]))   
     
-class ImageView(View):
-    template_name = 'view.html'
-    def get(self, request, *args, **kwargs):
-        image_id=kwargs['pk']
-        image=Image.objects.get(id=image_id)
-        with open(BASE_DIR + image.data.url, "rb") as f:
-            return HttpResponse(f.read(), content_type="image/jpeg")
-
 class CalculationsViews:
     headertext='Calculations'
     
@@ -140,77 +130,63 @@ class DatasetCalculateView(CalculationsViews, FormView):
         dsimages = DatasetImage.objects.filter(dataset_id=form.data['dataset'])
         algorithms = form.cleaned_data['algorithm']
         
-        # Send all requests
+        outputs=[]
         for dsimage in dsimages:
-            if len(algorithms) is 1:
-                output, created = Output.objects.get_or_create(algorithm=algorithms[0], image=dsimage.image)
-                self.save_output(algorithms[0], output)
-            else:
-                for algorithm in algorithms:
-                    output, created = Output.objects.get_or_create(algorithm=algorithm, image=dsimage.image)
-                    self.save_output(algorithm, output)
-                
-        # create tables
-        if len(algorithms) is 1:
-            images=dsimages.values_list('image__id', flat=True)
-            outputs = Output.objects.filter(algorithm=algorithms[0], image__in=images)
-            products = Product.objects.filter(output_id=outputs.first().id)
-            extra_columns=[]
-            for product in products:
-                tc = TemplateColumn(image_template('product-view', str(product.id)))
-                tpl = product.title, tc
-                extra_columns.append((product.title, tc))
-            extra_columns.append(('Output', TemplateColumn(image_template('output-view', 'record.pk'))))
-            
-            table = OutputTable_Image(data=outputs, extra_columns=extra_columns)
-            return render(self.request, 'list.html', {
-                    'table': table,
-                    'view': {
-                        'headertext': 'Calculations',
-                        'subheadertext': 'Comparing Images:',
-                    }
-                })
-        else:
-            tables={}
+            row={}
+            row['input']=dsimage.image
             for algorithm in algorithms:
-                outputs = Output.objects.filter(
-                    algorithm=algorithm,
-                    image__in=dsimages.values_list('image'))
-                
-                products = Product.objects.filter(output=outputs.first())
-                for product in products:
-                    extra_columns=[]
-                    tc = TemplateColumn(image_template('product-view', str(product.id)))
-                    tpl = product.title, tc
-                    extra_columns.append((product.title, tc))
-                extra_columns.append(('Output', TemplateColumn(image_template('output-view', 'record.pk'))))
-            
-                table = OutputTable_Image(outputs, extra_columns=extra_columns)
-                tables[algorithm] = table
+                row[algorithm]=Output.objects.get_or_create(
+                    algorithm=algorithm, image=dsimage.image)[0]
+                self.save_output(algorithm, row[algorithm])
+            outputs.append(row)
+ 
+        extra_columns=[]
+        for algorithm in algorithms:
+            col=PhotoColumn('output-view', 'record.'+algorithm+'.pk', True)
+            extra_column=(algorithm, col)
+            extra_columns.append(extra_column)
+        table=OutputTable(outputs, extra_columns=extra_columns)
+        return render(self.request, 'list.html', {
+                'table': table,
+                'view': {
+                    'headertext': 'Calculations',
+                    'subheadertext': 'Comparing Algorithms:',
+                }
+            })
 
-            return render(self.request, 'output.html', {
-                    'tables': tables,
-                    'view': {
-                        'headertext': 'Calculations',
-                        'subheadertext': 'Comparing Algorithms:',
-                    }
-                })
+class PhotoView(TemplateView):
+    template_name='view.html'
+    
+class ImageView(View):
+    def get(self, request, *args, **kwargs):
+        image_id=kwargs['pk']
+        image=Image.objects.get(id=image_id)
+        with open(BASE_DIR + image.data.url, "rb") as f:
+            return HttpResponse(f.read(), content_type="image/jpeg")
 
 class OutputView(View):
-    template_name = 'view.html'
     def get(self, request, *args, **kwargs):
         output=Output.objects.get(id=kwargs['pk'])
         with open(output.data.path, "rb") as f:
             return HttpResponse(f.read(), content_type="image/jpeg")
         
 class ProductView(View):
-    template_name = 'view.html'
     def get(self, request, *args, **kwargs):
         product=Product.objects.get(id=kwargs['pk'])
         with open(product.data.path, "rb") as f:
             return HttpResponse(f.read(), content_type="image/jpeg")
-               
-    
+
+class OutputListDetail(ListView):
+    template_name = 'list.html'
+    subheadertext='Products:'
+    model = Product
+    def get_context_data(self, **kwargs):
+        context = super(OutputListDetail, self).get_context_data(**kwargs)
+        context['table'] = ProductTable(
+            Product.objects.filter(output=self.kwargs['pk']))
+        return context
+
+
     
     
           

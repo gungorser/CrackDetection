@@ -4,25 +4,33 @@ Created on Mar 4, 2019
 @author: user
 '''
 from django_tables2 import tables, A
-from main.models import Image, Dataset, DatasetImage, Output
+from main.models import Image, Dataset, DatasetImage, Product
 from CrackDetection.settings import IMAGE_HEIGHT
-from django.utils.safestring import mark_safe
 
-def image_template(viewname, *args):
-    argval=''
-    for arg in args:
-        argval = argval + ' ' + arg
-    url = '{% url \''+viewname+'\''+argval+' %}'
-    return '<a href="'+url+'"><img src="'+url+'" height="'+str(IMAGE_HEIGHT)+'"></a>'
 
+class PhotoColumn(tables.columns.TemplateColumn):
+    def __init__(self, viewname, argval, detailview=False):
+        super(PhotoColumn, self).__init__(
+            template_code=self.create_template(viewname, argval, detailview),
+            attrs={"td": {"valign": "top", 'align': 'middle'}})
+        
+    def create_template(self, viewname, argval, detailview=False):
+        url = '{% url \''+viewname+'\' '+argval+' %}'
+        url_raw = '{% url \''+viewname+'raw\' '+argval+' %}'
+        url_detail = '{% url \''+viewname+'detail\' '+argval+' %}'
+        retval = '<a href="'+url+'"><img src="'+url_raw+'" height="'+str(IMAGE_HEIGHT)+'"></a>'
+        if detailview:
+            retval += '<br><a href="'+url_detail+'">(detail)</a>'
+        return retval
+        
 class ImageTable(tables.Table):
     delete = tables.columns.LinkColumn('image-delete', args=[A('pk')]
-            , orderable=False, empty_values=())
+            , orderable=False, text='delete')
     
     update = tables.columns.LinkColumn('image-update', args=[A('pk')]
-            , orderable=False, empty_values=()) 
+            , orderable=False, text='update') 
     
-    view = tables.columns.TemplateColumn(image_template('image-view', 'record.pk'))
+    view = PhotoColumn('image-view', 'record.pk')
     
     class Meta:
         model = Image
@@ -30,7 +38,7 @@ class ImageTable(tables.Table):
 
 class ImageRemainingTable(tables.Table):
     add = tables.columns.TemplateColumn('<a href=" {% url \'datasetimage-create\' view.kwargs.pk record.pk %}">add</a>')
-    view = tables.columns.TemplateColumn(image_template('image-view', 'record.pk'))
+    view = PhotoColumn('image-view', 'record.pk')
     
     class Meta:
         model = Image
@@ -38,10 +46,10 @@ class ImageRemainingTable(tables.Table):
         
 class DatasetTable(tables.Table):
     delete = tables.columns.LinkColumn('dataset-delete', args=[A('pk')]
-            , orderable=False, empty_values=())
+            , orderable=False, text='delete')
     
     update = tables.columns.LinkColumn('dataset-update', args=[A('pk')]
-            , orderable=False, empty_values=()) 
+            , orderable=False, text='update') 
     
     class Meta:
         model = Dataset
@@ -49,7 +57,7 @@ class DatasetTable(tables.Table):
         
 class DatasetImageTable(tables.Table):
     remove = tables.columns.TemplateColumn('<a href=" {% url \'datasetimage-delete\' record.dataset.pk record.image.pk %}">remove</a>')
-    view = tables.columns.TemplateColumn(image_template('image-view', 'record.image.pk'))
+    view = PhotoColumn('image-view', 'record.image.pk')
 
     class Meta:
         model = DatasetImage
@@ -59,25 +67,15 @@ class DatasetImageTable(tables.Table):
         return record.image.id
     
 class OutputTable(tables.Table):
-    caption = tables.columns.Column(empty_values=())
-    inputview = tables.columns.TemplateColumn(
-        image_template('image-view', 'record.image.pk'),
-        verbose_name='Input')
+    name = tables.columns.TemplateColumn(template_code='{{ record.input.name }}')
+    input = PhotoColumn('image-view', 'record.input.pk')
+
+class ProductTable(tables.Table):
+    view = PhotoColumn('product-view', 'record.pk')
     
     class Meta:
-        model = Output
-        fields = ['caption', 'inputview']
-    
-class OutputTable_Algorithm(OutputTable): 
-    def render_caption(self, record):
-        return record.algorithm
-        
-class OutputTable_Image(OutputTable):   
-    def render_caption(self, record):
-        return record.image.name
-        
-    
-    
+        model = Product
+        fields = ['id', 'title', 'view',]
     
     
     

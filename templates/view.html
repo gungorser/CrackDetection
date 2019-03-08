@@ -2,6 +2,6 @@
 
 {% block content %}
 
-<img src="{{ image.document.url }}" width="500px"/>
+<img src="{{ request.get_full_path }}raw" width="500px"/>
 
 {% endblock %}
