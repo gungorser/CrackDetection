@@ -1,15 +1,19 @@
+FROM python:3.7
 
-FROM python:3.4
+ARG REPO_PATH=/mnt/CrackDetection
+ENV FILESHARE_PATH=/mnt/share
 
-RUN mkdir /code
-WORKDIR /code
-ADD requirements.txt /code/
-RUN pip install -r requirements.txt
-ADD . /code/
-
+# Install debian requirements
 RUN apt-get update \
         && apt-get install -y --no-install-recommends libglib2.0-0\
         && apt-get update 
+        
+# Install python requirements
+WORKDIR $REPO_PATH
+ADD requirements.txt .
+RUN pip install -r requirements.txt
 
-EXPOSE 8000 2222
+#expose ports
+EXPOSE 80 443
+
 CMD python manage.py runserver 0.0.0.0:80
