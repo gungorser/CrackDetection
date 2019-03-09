@@ -85,7 +85,7 @@ DATABASES = {
         'NAME': 'crackdetection',
         'USER': 'crackdetectionuser',
         'PASSWORD': 'user',
-        'HOST': 'localhost',
+        'HOST': 'crackdetectiondb.centralus.azurecontainer.io',
         'PORT': '',
     }
 }

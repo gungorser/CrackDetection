@@ -3,3 +3,4 @@ django-tables2 >=2
 opencv-python 
 requests
 pillow
+psycopg2

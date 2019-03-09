@@ -29,6 +29,9 @@ while getopts "cm:di:" arg; do
       ;;
     i)
     	# import database
-    	pg_restore -d $DATABASE $OPTARG -c -U $DB_USER
+    	psql -c "CREATE USER $DB_USER WITH PASSWORD 'user'" > /dev/null 2>&1 || test $? -eq 1 
+    	psql -c "DROP DATABASE $DATABASE" > /dev/null 2>&1 || test $? -eq 1
+		psql -c "CREATE DATABASE $DATABASE" > /dev/null
+    	pg_restore -d $DATABASE $OPTARG -c -U $DB_USER || test $? -eq 1 && echo "Success"
   esac
 done
