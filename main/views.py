@@ -161,7 +161,7 @@ class ImageView(View):
     def get(self, request, *args, **kwargs):
         image_id=kwargs['pk']
         image=Image.objects.get(id=image_id)
-        with open(BASE_DIR + image.data.url, "rb") as f:
+        with open(image.data.path, "rb") as f:
             return HttpResponse(f.read(), content_type="image/jpeg")
 
 class OutputView(View):
