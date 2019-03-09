@@ -81,8 +81,12 @@ WSGI_APPLICATION = 'CrackDetection.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(os.environ['SHARE_DIR'], 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'crackdetection',
+        'USER': 'crackdetectionuser',
+        'PASSWORD': 'user',
+        'HOST': 'localhost',
+        'PORT': '',
     }
 }
 
