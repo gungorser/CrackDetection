@@ -1,4 +1,3 @@
-
 FROM debian:stretch
 RUN apt-get update && apt-get install -y \
 	postgresql postgresql-client postgresql-contrib

@@ -38,8 +38,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'main',
     'django_tables2',
-    'main'
+    'django_cleanup',
 ]
 
 LOGIN_REDIRECT_URL = '/'
